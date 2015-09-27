@@ -11,8 +11,6 @@ client = Twitter::REST::Client.new do |config|
   config.consumer_secret = ENV["TWITTER_SECRET"]
 end
 
-require 'pry';binding.pry
-
 def collect_with_max_id(collection=[], max_id=nil, &block)
   response = yield(max_id)
   collection += response

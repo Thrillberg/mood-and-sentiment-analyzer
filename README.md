@@ -1,1 +1,3 @@
-News Bias Detector
+README
+
+Twitter Face Mood Detector
