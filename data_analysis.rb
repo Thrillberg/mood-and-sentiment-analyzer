@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'gruff'
 
 @db = SQLite3::Database.new "collection.sqlite3"
 
@@ -28,29 +29,26 @@ def analyze_moods(politician, twitter_feed)
   moods = @valid_entries.select { |entry| entry[1] == formal_feed_name && politician_names.include?(entry[3]) }
 
   freq = moods.inject(Hash.new(0)) { |h, v| h[v[6]] += 1;h }
-  puts "#{politician}'s breakdown from #{formal_feed_name} is:"
-  puts "#{freq}"
 
   #dominant_mood = freq.max_by{ |k, v| v }[0]
 end
 
-puts ""
-analyze_moods('clinton', 'breitbart')
-analyze_moods('trump', 'breitbart')
-puts ""
+politicians = ["clinton", "trump"]
+twitter_feeds = ["breitbart", "cbs", "cnn", "huffpo", "politico"]
 
-analyze_moods('clinton', 'cbs')
-analyze_moods('trump', 'cbs')
-puts ""
-
-analyze_moods('clinton', 'cnn')
-analyze_moods('trump', 'cnn')
-puts ""
-
-analyze_moods('clinton', 'huffpo')
-analyze_moods('trump', 'huffpo')
-puts ""
-
-analyze_moods('clinton', 'politico')
-analyze_moods('trump', 'politico')
-puts ""
+politicians.each do |politician|
+  twitter_feeds.each do |feed|
+    moods = analyze_moods("#{politician}", "#{feed}")
+    g = Gruff::Pie.new
+    g.font = "/Library/Fonts/Arial.ttf"
+    g.title = "#{feed}'s representation of #{politician}"
+    g.data 'Scared', moods['scared']
+    g.data 'Happy', moods['happy']
+    g.data 'Angry', moods['angry']
+    g.data 'Sad', moods['sad']
+    g.data 'Surprised', moods['surprised']
+    g.data 'Neutral', moods['neutral']
+    g.data 'Disgusted', moods['disgusted']
+    g.write("#{politician}_#{feed}_moods.png")
+  end
+end
