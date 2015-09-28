@@ -1,5 +1,6 @@
 require 'sqlite3'
 require 'gruff'
+#require 'rmagick'
 
 @db = SQLite3::Database.new "collection.sqlite3"
 @valid_entries = @db.execute "SELECT * FROM trump_clinton_collection WHERE (mood = \"happy\") OR (mood = \"sad\") OR (mood = \"disgusted\") OR (mood = \"surprised\") OR (mood = \"neutral\") OR (mood = \"scared\") OR (mood = \"angry\")"
@@ -8,8 +9,6 @@ require 'gruff'
 @twitter_feeds = {"breitbart" => "Breitbart News", "cbs" => "CBS Politics", "cnn" => "CNN Politics", "huffpo" => "Huffington Post Politics", "politico" => "Politico"}
 
 def analyze_moods(politician, twitter_feed)
-  
-
   formal_feed_name = ""
   @twitter_feeds.each do |feed|
     if twitter_feed == feed[0]
@@ -25,7 +24,6 @@ def analyze_moods(politician, twitter_feed)
   end
 
   moods = @valid_entries.select { |entry| entry[1] == formal_feed_name && politician_names.include?(entry[3]) }
-
   freq = moods.inject(Hash.new(0)) { |h, v| h[v[6]] += 1;h }
 
   #dominant_mood = freq.max_by{ |k, v| v }[0]
@@ -44,6 +42,11 @@ end
     g.data 'Surprised', moods['surprised']
     g.data 'Neutral', moods['neutral']
     g.data 'Disgusted', moods['disgusted']
-    g.write("#{politician}_#{feed}_moods.png")
+    g.write("#{politician[0]}_#{feed[0]}_moods.png")
+    img = Magick::Image::read("#{politician[0]}_#{feed[0]}_moods.png").first
+    blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
+    img = img.blend(blend, '100%', '100%', 50, 125)
+    img.write("#{politician[0]}_#{feed[0]}_with_overlay.png")
+    require 'pry';binding.pry
   end
 end
