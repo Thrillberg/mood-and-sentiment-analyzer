@@ -59,11 +59,11 @@ end
     g.data 'Surprised', moods['surprised']
     g.data 'Neutral', moods['neutral']
     g.data 'Disgusted', moods['disgusted']
-    g.write("#{politician[0]}_#{feed[0]}_moods.png")
-    img = Magick::Image::read("#{politician[0]}_#{feed[0]}_moods.png").first
-    blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
-    img = img.blend(blend, '100%', '100%', 50, 125)
-    img.write("#{politician[0]}_#{feed[0]}_with_overlay.png")
+    g.write("img/#{politician[0]}_#{feed[0]}_moods.png")
+    # img = Magick::Image::read("#{politician[0]}_#{feed[0]}_moods.png").first
+    # blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
+    # img = img.blend(blend, '100%', '100%', 50, 125)
+    # img.write("#{politician[0]}_#{feed[0]}_with_overlay.png")
   end
 end
 
@@ -77,10 +77,10 @@ end
     g.data 'Negative', sentiments['negative']
     g.data 'Neutral', sentiments['neutral']
     g.data 'Positive', sentiments['positive']
-    g.write("#{politician[0]}_#{feed[0]}_sentiment.png")
-    img = Magick::Image::read("#{politician[0]}_#{feed[0]}_sentiment.png").first
-    blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
-    img = img.blend(blend, '100%', '100%', 50, 125)
-    img.write("#{politician[0]}_#{feed[0]}_sentiment.png")
+    g.write("img/#{politician[0]}_#{feed[0]}_sentiment.png")
+    # img = Magick::Image::read("#{politician[0]}_#{feed[0]}_sentiment.png").first
+    # blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
+    # img = img.blend(blend, '100%', '100%', 50, 125)
+    # img.write("#{politician[0]}_#{feed[0]}_sentiment.png")
   end
 end
