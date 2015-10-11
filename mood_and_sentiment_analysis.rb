@@ -1,7 +1,7 @@
 require 'sqlite3'
 require 'gruff'
 
-@db = SQLite3::Database.new "collection.sqlite3"
+@db = SQLite3::Database.new "db/collection.sqlite3"
 # @valid_entries = @db.execute "SELECT * FROM trump_clinton_collection WHERE (mood = \"happy\") OR (mood = \"sad\") OR (mood = \"disgusted\") OR (mood = \"surprised\") OR (mood = \"neutral\") OR (mood = \"scared\") OR (mood = \"angry\")"
 
 @valid_entries = @db.execute "SELECT * FROM tweet_texts"
@@ -79,10 +79,6 @@ end
     g.data 'Negative', sentiments['negative']
     g.data 'Neutral', sentiments['neutral']
     g.data 'Positive', sentiments['positive']
-    g.write("img/#{politician[0]}_#{feed[0]}_sentimental.png")
-    # img = Magick::Image::read("#{politician[0]}_#{feed[0]}_sentiment.png").first
-    # blend = Magick::Image::read("#{feed[0]}.png").first.resize(100, 50)
-    # img = img.blend(blend, '100%', '100%', 50, 125)
-    # img.write("#{politician[0]}_#{feed[0]}_sentiment.png")
+    g.write("img/sentimental/#{politician[0]}_#{feed[0]}_sentimental.png")
   end
 end

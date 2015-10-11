@@ -24,30 +24,20 @@ def analyze_sentiments(politician, twitter_feed)
   end
 
   sentiments = @valid_entries.select { |entry| entry[1] == formal_feed_name && politician_names.include?(entry[2]) }
-
-  freq = Hash.new(0)
-  freq["happy"] = 0
-  freq["sad"] = 0
-  sentiments.each do |entry|
-    happy_prob = entry[6]
-    sad_prob = entry[7]
-    freq["happy"] += happy_prob.to_f
-    freq["sad"] += sad_prob.to_f
-  end
-  freq["happy"] = freq["happy"]/sentiments.count*100
-  freq["sad"] = freq["sad"]/sentiments.count*100
-  return freq
+  freq = sentiments.inject(Hash.new(0)) { |h, v| h[v[8]] += 1;h }
 end
 
 #sentiment charting
 @politicians.each do |politician|
   @twitter_feeds.each do |feed|
-    freq = analyze_sentiments("#{politician[0]}", "#{feed[0]}")
+    sentiments = analyze_sentiments("#{politician[0]}", "#{feed[0]}")
+    require 'pry';binding.pry
     g = Gruff::Pie.new
     g.font = "/Library/Fonts/Arial.ttf"
     g.title = "sentiment associated with #{politician[0]} in #{feed[0]}"
-    g.data 'Sad', freq['sad']
-    g.data 'Happy', freq['happy']
-    g.write("img/davies/#{politician[0]}_#{feed[0]}_davies.png")
+    g.data 'Negative', sentiments['negative']
+    g.data 'Neutral', sentiments['neutral']
+    g.data 'Positive', sentiments['positive']
+    g.write("img/alchemy/#{politician[0]}_#{feed[0]}_alchemy.png")
   end
 end

@@ -1,7 +1,7 @@
 DICTIONARY = {}
 @threshold = 0.0
 
-file = File.new('dictionary.txt')
+file = File.new('dictionaries/dictionary.txt')
 while (line = file.gets)
   parsed_line = line.chomp.split(' ')
   score = parsed_line[0]

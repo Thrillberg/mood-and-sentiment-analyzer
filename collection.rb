@@ -5,10 +5,28 @@ require 'mechanize'
 require 'dotenv'
 
 Dotenv.load "application.env"
-@db = SQLite3::Database.new "collection.sqlite3"
+@db = SQLite3::Database.new "db/collection.sqlite3"
 client = Twitter::REST::Client.new do |config|
   config.consumer_key    = ENV["TWITTER_KEY"]
   config.consumer_secret = ENV["TWITTER_SECRET"]
+end
+
+politicians = ["@HillaryClinton", "@HillaryClinton's", "@realDonaldTrump", "@realDonaldTrump's", "Clinton", "Clinton's", "Trump", "Trump's", "Hillary", "Hillary's"]
+
+def to_formal_name(feed)
+  formal_feed_name = ""
+  if feed == "cnnpolitics"
+    formal_feed_name = "CNN Politics"
+  elsif feed == "cbspolitics"
+    formal_feed_name = "CBS Politics"
+  elsif feed == "breitbartnews"
+    formal_feed_name = "Breitbart News"
+  elsif feed == "huffpostpol"
+    formal_feed_name = "Huffington Post Politics"
+  elsif feed == "politico"
+    formal_feed_name = "Politico"
+  end
+  formal_feed_name
 end
 
 def collect_with_max_id(collection=[], max_id=nil, &block)
@@ -25,195 +43,38 @@ def client.get_tweets(user)
   end
 end
 
-# def cnnpolitics_extraction(politicians, tweets)
-#   tweets.each do |tweet|
-#     politicians.each do |politician|
-#       begin
-#         if tweet.text.downcase.split(' ').include?(politician.downcase)
-#           img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
-#           agent = Mechanize.new
-#           page = agent.get(img_url)
-#           img_url = page.image_with(:src => /small/).src.gsub(":large", "")
-#           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"CNN Politics\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-#           @db.execute statement
-#         end
-#       rescue
-#         next
-#       end 
-#     end
-#   end
-# end
-
-# def huffpostpol_extraction(politicians, tweets)
-#   tweets.each do |tweet|
-#     politicians.each do |politician|
-#       begin
-#         if tweet.text.downcase.split(' ').include?(politician.downcase)
-#           img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
-#           agent = Mechanize.new
-#           page = agent.get(img_url)
-#           img_url = page.image_with(:src => /small/).src.gsub(":small", "")
-#           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"Huffington Post Politics\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-#           @db.execute statement
-#         end
-#       rescue
-#         next
-#       end 
-#     end
-#   end
-# end
-
-# def cbspolitics_extraction(politicians, tweets)
-#   tweets.each do |tweet|
-#     politicians.each do |politician|
-#       begin
-#         if tweet.text.downcase.split(' ').include?(politician.downcase)
-#           img_url = tweet.text.match(/http[^>]*/).to_s
-#           agent = Mechanize.new
-#           page = agent.get(img_url)
-#           img_url = page.images.first.src
-#           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"CBS Politics\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-#           @db.execute statement
-#         end
-#       rescue
-#         next
-#       end 
-#     end
-#   end
-# end
-
-# def breitbartnews_extraction(politicians, tweets)
-#   tweets.each do |tweet|
-#     politicians.each do |politician|
-#       begin
-#         if tweet.text.downcase.split(' ').include?(politician.downcase)
-#           img_url = tweet.text.match(/http\S*/).to_s
-#           agent = Mechanize.new
-#           page = agent.get(img_url)
-#           img_url = page.images.first.src
-#           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"Breitbart News\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-#           @db.execute statement
-#         end
-#       rescue
-#         next
-#       end 
-#     end
-#   end
-# end
-
-# def politico_extraction(politicians, tweets)
-#   tweets.each do |tweet|
-#     politicians.each do |politician|
-#       begin
-#         if tweet.text.downcase.split(' ').include?(politician.downcase)
-#           img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
-#           agent = Mechanize.new
-#           page = agent.get(img_url)
-#           img_url = page.image_with(:src => /small/).src.gsub(":small", "")
-#           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"Politico\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-#           @db.execute statement
-#         end
-#       rescue
-#         next
-#       end 
-#     end
-#   end
-# end
-
-politicians = ["@HillaryClinton", "@realDonaldTrump", "Clinton", "Trump", "Hillary"]
-
-cnnpolitics_tweets = client.get_tweets("cnnpolitics")
-huffpostpol_tweets = client.get_tweets("huffpostpol")
-cbspolitics_tweets = client.get_tweets("cbspolitics")
-breitbartnews_tweets = client.get_tweets("breitbartnews")
-politico_tweets = client.get_tweets("politico")
-
-def cnnpolitics_texts(politicians, tweets)
+def extraction(politicians, tweets, feed)
   tweets.each do |tweet|
     politicians.each do |politician|
       begin
         if tweet.text.downcase.split(' ').include?(politician.downcase)
-          statement = "INSERT INTO tweet_texts (twitter_account, politician, text, date) VALUES (\"CNN Politics\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          @db.execute statement
+          agent = Mechanize.new
+          img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
+          page = agent.get(img_url)
+          if feed == "cnnpolitics" || feed == "huffpostpol" || feed == "politico"
+            img_url = page.image_with(:src => /small/).src.gsub(":small", "")
+          elsif feed == "cbspolitics" || feed == "breitbartnews"
+            img_url = page.images.first.src
+          end
+          statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"#{to_formal_name(feed)}\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
+          require 'pry';binding.pry
+          # @db.execute statement
         end
       rescue
         next
-      end
+      end 
     end
   end
 end
 
-def huffpostpol_texts(politicians, tweets)
-  tweets.each do |tweet|
-    politicians.each do |politician|
-      begin
-        if tweet.text.downcase.split(' ').include?(politician.downcase)
-          statement = "INSERT INTO tweet_texts (twitter_account, politician, text, date) VALUES (\"Huffington Post\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          @db.execute statement
-        end
-      rescue
-        next
-      end
-    end
-  end
+def collect(feed)
+  require 'pry';binding.pry
+  tweets = client.get_tweets(feed)
+  extraction(politicians, tweets, feed)
 end
 
-def cbspolitics_texts(politicians, tweets)
-  tweets.each do |tweet|
-    politicians.each do |politician|
-      begin
-        if tweet.text.downcase.split(' ').include?(politician.downcase)
-          statement = "INSERT INTO tweet_texts (twitter_account, politician, text, date) VALUES (\"CBS Politics\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          @db.execute statement
-        end
-      rescue
-        next
-      end
-    end
-  end
-end
-
-def breitbartnews_texts(politicians, tweets)
-  tweets.each do |tweet|
-    politicians.each do |politician|
-      begin
-        if tweet.text.downcase.split(' ').include?(politician.downcase)
-          statement = "INSERT INTO tweet_texts (twitter_account, politician, text, date) VALUES (\"Breitbart News\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          @db.execute statement
-        end
-      rescue
-        next
-      end
-    end
-  end
-end
-
-def politico_texts(politicians, tweets)
-  tweets.each do |tweet|
-    politicians.each do |politician|
-      begin
-        if tweet.text.downcase.split(' ').include?(politician.downcase)
-          statement = "INSERT INTO tweet_texts (twitter_account, politician, text, date) VALUES (\"Politico\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          @db.execute statement
-        end
-      rescue
-        next
-      end
-    end
-  end
-end
-
-cnnpolitics_texts(politicians, cnnpolitics_tweets)
-# cnnpolitics_extraction(politicians, cnnpolitics_tweets)
-
-huffpostpol_texts(politicians, huffpostpol_tweets)
-# huffpostpol_extraction(politicians, huffpostpol_tweets)
-
-cbspolitics_texts(politicians, cbspolitics_tweets)
-# cbspolitics_extraction(politicians, cbspolitics_tweets)
-
-breitbartnews_texts(politicians, breitbartnews_tweets)
-# breitbartnews_extraction(politicians, breitbartnews_tweets)
-
-politico_texts(politicians, politico_tweets)
-# politico_extraction(politicians, politico_tweets)
+collect("cnnpolitics")
+collect("cbspolitics")
+collect("breitbartnews")
+collect("huffpostpol")
+collect("politico")

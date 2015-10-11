@@ -3,7 +3,7 @@ require 'face'
 require 'dotenv'
 
 Dotenv.load "application.env"
-@db = SQLite3::Database.new "collection.sqlite3"
+@db = SQLite3::Database.new "db/collection.sqlite3"
 client = Face.get_client(:api_key => ENV["FACE_KEY"], :api_secret => ENV["FACE_SECRET"])
 
 all_entries = @db.execute "SELECT * FROM trump_clinton_collection"

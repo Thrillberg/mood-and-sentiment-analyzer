@@ -1,7 +1,7 @@
 require 'sqlite3'
-require_relative "davies_sentiment_analysis.rb"
+require_relative "dictionaries/davies_sentiment_analysis.rb"
 
-@db = SQLite3::Database.new "collection.sqlite3"
+@db = SQLite3::Database.new "db/collection.sqlite3"
 @all_entries = @db.execute "SELECT * FROM tweet_texts"
 
 @all_entries.each do |entry|
