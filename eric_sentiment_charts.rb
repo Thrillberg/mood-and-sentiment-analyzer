@@ -3,7 +3,7 @@ require 'gruff'
 
 @db = SQLite3::Database.new "db/collection.sqlite3"
 
-@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 112"
+@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 200"
 
 @politicians = {"clinton" => ["Clinton", "Hillary", "@HillaryClinton"], "trump" => ["Trump", "@realDonaldTrump"]}
 @twitter_feeds = {"cnn" => "CNN Politics"}

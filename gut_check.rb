@@ -1,7 +1,7 @@
 require 'sqlite3'
 
 @db = SQLite3::Database.new "db/collection.sqlite3"
-@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 150"
+@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 200"
 
 @sentimental_sentiment_count = 0
 @davies_sentiment_count = 0

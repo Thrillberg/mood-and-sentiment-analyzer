@@ -31,7 +31,6 @@ end
 @politicians.each do |politician|
   @twitter_feeds.each do |feed|
     sentiments = analyze_sentiments("#{politician[0]}", "#{feed[0]}")
-    require 'pry';binding.pry
     g = Gruff::Pie.new
     g.font = "/Library/Fonts/Arial.ttf"
     g.title = "sentiment associated with #{politician[0]} in #{feed[0]}"

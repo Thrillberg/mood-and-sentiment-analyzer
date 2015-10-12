@@ -4,8 +4,9 @@ require 'twitter'
 require 'mechanize'
 require 'dotenv'
 
+# Run this code to collect tweets from the five news sources and then extract the text of the tweet and url of the image to the db.
 Dotenv.load "application.env"
-@db = SQLite3::Database.new "db/collection.sqlite3"
+db = SQLite3::Database.new "db/collection.sqlite3"
 client = Twitter::REST::Client.new do |config|
   config.consumer_key    = ENV["TWITTER_KEY"]
   config.consumer_secret = ENV["TWITTER_SECRET"]
@@ -35,11 +36,11 @@ def collect_with_max_id(collection=[], max_id=nil, &block)
   response.empty? ? collection.flatten : collect_with_max_id(collection, response.last.id - 1, &block)
 end
 
-def client.get_tweets(user)
+def get_tweets(client, user)
   collect_with_max_id do |max_id|
     options = {count: 200, include_rts: true}
     options[:max_id] = max_id unless max_id.nil?
-    user_timeline(user, options)
+    client.user_timeline(user, options)
   end
 end
 
@@ -57,8 +58,7 @@ def extraction(politicians, tweets, feed)
             img_url = page.images.first.src
           end
           statement = "INSERT INTO trump_clinton_collection (twitter_account, img_url, politician, text, date) VALUES (\"#{to_formal_name(feed)}\", \"#{img_url}\", \"#{politician}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
-          require 'pry';binding.pry
-          # @db.execute statement
+          db.execute statement
         end
       rescue
         next
@@ -67,14 +67,13 @@ def extraction(politicians, tweets, feed)
   end
 end
 
-def collect(feed)
-  require 'pry';binding.pry
-  tweets = client.get_tweets(feed)
+def collect(client, feed)
+  tweets = get_tweets(client, feed)
   extraction(politicians, tweets, feed)
 end
 
-collect("cnnpolitics")
-collect("cbspolitics")
-collect("breitbartnews")
-collect("huffpostpol")
-collect("politico")
+collect(client, "cnnpolitics")
+collect(client, "cbspolitics")
+collect(client, "breitbartnews")
+collect(client, "huffpostpol")
+collect(client, "politico")
