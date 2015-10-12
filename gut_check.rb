@@ -1,7 +1,7 @@
 require 'sqlite3'
 
 @db = SQLite3::Database.new "db/collection.sqlite3"
-@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 200"
+@valid_entries = @db.execute "SELECT * FROM tweet_texts WHERE id BETWEEN 1 AND 250"
 
 @sentimental_sentiment_count = 0
 @davies_sentiment_count = 0
@@ -28,6 +28,6 @@ require 'sqlite3'
   end
 end
 
-puts "Sentimental: #{@sentimental_sentiment_count}"
-puts "Davies: #{@davies_sentiment_count}"
-puts "Alchemy: #{@alchemy_sentiment_count}"
+puts "Sentimental: #{@sentimental_sentiment_count.to_f/250.to_f*100}%"
+puts "Davies: #{@davies_sentiment_count.to_f/250.to_f*100}%"
+puts "Alchemy: #{@alchemy_sentiment_count.to_f/250.to_f*100}%"
