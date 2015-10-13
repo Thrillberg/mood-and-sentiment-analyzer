@@ -39,7 +39,7 @@ class TweetCollection
               img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
               page = Nokogiri::HTML(open(img_url, :allow_redirections => :all))
               img_url = page.xpath("//meta[@property='og:image']").to_s.match(/(http.*(jpg|png))/)[0]
-              statement = "INSERT INTO trump_clinton_tweets (twitter_account, img_url, politician, text, date) VALUES (\"#{@twitter_feeds[feed]}\", \"#{img_url}\", \"#{politician[0]}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
+              statement = "INSERT INTO tweet_texts (twitter_account, img_url, politician, text, date) VALUES (\"#{@twitter_feeds[feed]}\", \"#{img_url}\", \"#{politician[0]}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
               @db.execute statement
             end
           rescue
@@ -51,7 +51,7 @@ class TweetCollection
   end
 
   def collect_tweets_and_data
-    tweets = get_tweets(@client, "politico")
-    extract_data(tweets, "politico")
+    tweets = get_tweets(@client, @feed)
+    extract_data(tweets, @feed)
   end
 end
