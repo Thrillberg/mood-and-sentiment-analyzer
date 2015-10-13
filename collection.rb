@@ -1,8 +1,9 @@
 require 'open-uri'
 require 'sqlite3'
 require 'twitter'
-require 'mechanize'
+require 'nokogiri'
 require 'dotenv'
+require 'open_uri_redirections'
 
 class TweetCollection
   def initialize(database, feed)
@@ -12,7 +13,6 @@ class TweetCollection
       config.consumer_key    = ENV["TWITTER_KEY"]
       config.consumer_secret = ENV["TWITTER_SECRET"]
     end
-
     @feed = feed
   end
 
@@ -30,21 +30,16 @@ class TweetCollection
     end
   end
 
-  def extract_data(politicians, tweets, feed)
+  def extract_data(tweets, feed)
     tweets.each do |tweet|
-      politicians.each do |politician|
-        politician[0].each do |pol|
+      POLITICIANS.each do |politician|
+        politician[1].each do |pol|
           begin
             if tweet.text.downcase.split(' ').include?(pol.downcase)
-              agent = Mechanize.new
               img_url = tweet.text.scan(/http[^>]*/).flatten[0].split(' ').last
-              page = agent.get(img_url)
-              if feed == "cnnpolitics" || feed == "huffpostpol" || feed == "politico"
-                img_url = page.image_with(:src => /small/).src.gsub(":small", "")
-              elsif feed == "cbspolitics" || feed == "breitbartnews"
-                img_url = page.images.first.src
-              end
-              statement = "INSERT INTO trump_clinton_tweets (twitter_account, img_url, politician, text, date) VALUES (\"#{@twitter_feeds[feed]}\", \"#{img_url}\", \"#{politician[1]}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
+              page = Nokogiri::HTML(open(img_url, :allow_redirections => :all))
+              img_url = page.xpath("//meta[@property='og:image']").to_s.match(/(http.*(jpg|png))/)[0]
+              statement = "INSERT INTO trump_clinton_tweets (twitter_account, img_url, politician, text, date) VALUES (\"#{@twitter_feeds[feed]}\", \"#{img_url}\", \"#{politician[0]}\", \"#{tweet.text}\", \"#{tweet.created_at}\")"
               @db.execute statement
             end
           rescue
@@ -56,7 +51,7 @@ class TweetCollection
   end
 
   def collect_tweets_and_data
-    tweets = get_tweets(@client, @feed)
-    extract_data(@politicians, tweets, @feed)
+    tweets = get_tweets(@client, "politico")
+    extract_data(tweets, "politico")
   end
 end
