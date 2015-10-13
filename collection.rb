@@ -14,10 +14,6 @@ class TweetCollection
     end
 
     @feed = feed
-
-    @politicians = {["@HillaryClinton", "@HillaryClinton's", "Clinton", "Clinton's", "Hillary", "Hillary's"] => "Hillary Clinton", ["@realDonaldTrump", "@realDonaldTrump's", "Trump", "Trump's"] => "Donald Trump"}
-
-    @twitter_feeds = {"breitbartnews" => "Breitbart News", "cbspolitics" => "CBS Politics", "cnnpolitics" => "CNN Politics", "huffpostpolitics" => "Huffington Post", "politico" => "Politico"}
   end
 
   def collect_with_max_id(collection=[], max_id=nil, &block)
